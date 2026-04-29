@@ -9,10 +9,12 @@ st.set_page_config(
 )
 
 st.title("📊 AI Job Market Analytics Dashboard")
+
 st.markdown(
     """
     This dashboard analyzes job-market trends from the PySpark analytics pipeline.
-    It highlights the most demanded skills and top hiring locations for tech-related roles.
+    It highlights in-demand technical skills, hiring locations, and key insights
+    to help graduates understand where to focus their learning.
     """
 )
 
@@ -48,13 +50,18 @@ python analytics/spark_analysis.py
 skills_df = skills_df.sort_values("count", ascending=False)
 locations_df = locations_df.sort_values("count", ascending=False)
 
+top_skill = skills_df.iloc[0]["skill"]
+top_skill_count = int(skills_df.iloc[0]["count"])
+top_location = locations_df.iloc[0]["location"]
+top_location_count = int(locations_df.iloc[0]["count"])
+
 # -----------------------------
 # KPI Metrics
 # -----------------------------
 
 st.subheader("Overview")
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric("Unique Skills", skills_df["skill"].nunique())
@@ -64,6 +71,12 @@ with col2:
 
 with col3:
     st.metric("Hiring Locations", locations_df["location"].nunique())
+
+with col4:
+    st.metric("Top Skill Mentions", top_skill_count)
+
+st.success(f"🔥 Most demanded skill: {top_skill.title()}")
+st.info(f"📍 Strongest hiring location: {top_location} ({top_location_count} job mention(s))")
 
 st.divider()
 
@@ -76,7 +89,7 @@ st.sidebar.header("Dashboard Controls")
 top_n_skills = st.sidebar.slider(
     "Number of top skills to display",
     min_value=3,
-    max_value=min(20, len(skills_df)),
+    max_value=max(3, min(20, len(skills_df))),
     value=min(10, len(skills_df)),
 )
 
@@ -95,15 +108,21 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Top In-Demand Skills")
-    st.bar_chart(
-        skills_df.head(top_n_skills).set_index("skill")["count"]
+    top_skills_chart = (
+        skills_df.head(top_n_skills)
+        .sort_values("count", ascending=True)
+        .set_index("skill")["count"]
     )
+    st.bar_chart(top_skills_chart)
 
 with col2:
     st.subheader("Top Hiring Locations")
-    st.bar_chart(
-        locations_df.head(top_n_locations).set_index("location")["count"]
+    top_locations_chart = (
+        locations_df.head(top_n_locations)
+        .sort_values("count", ascending=True)
+        .set_index("location")["count"]
     )
+    st.bar_chart(top_locations_chart)
 
 st.divider()
 
@@ -137,18 +156,15 @@ st.divider()
 
 st.subheader("Key Insights")
 
-top_skill = skills_df.iloc[0]["skill"]
-top_location = locations_df.iloc[0]["location"]
-
 st.markdown(
     f"""
     - **{top_skill.title()}** appears as the most demanded skill in the current dataset.
     - **{top_location}** appears as the strongest hiring location in the current dataset.
-    - The dashboard is powered by a PySpark pipeline that processes job descriptions and aggregates market trends.
-    - These insights can help graduates identify which technical skills to prioritize.
+    - The dashboard is powered by a **PySpark analytics pipeline** that processes job descriptions and aggregates market trends.
+    - These insights help graduates identify which technical skills to prioritize before applying to jobs.
     """
 )
 
-st.info(
-    "Next improvement: connect this dashboard to a larger real-world job dataset for stronger market insights."
+st.warning(
+    "Current dataset is small. For stronger insights, connect a larger real-world job dataset."
 )
