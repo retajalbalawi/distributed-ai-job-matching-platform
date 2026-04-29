@@ -25,7 +25,7 @@ def generate_matches(user_id: int, db: Session = Depends(get_db)):
     created_matches = []
 
     for job in jobs:
-        score, explanation = calculate_match_score(user.skills, job.required_skills)
+        score, explanation = calculate_match_score(user, job)
 
         match = models.Match(
             user_id=user.id,
