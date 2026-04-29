@@ -5,15 +5,11 @@ spark = SparkSession.builder \
     .appName("Job Market Analysis") \
     .getOrCreate()
 
-# Sample job data (later you can connect DB)
-data = [
-    ("AI Engineer Intern", "python, machine learning, deep learning", "Riyadh"),
-    ("Data Analyst", "sql, excel, power bi", "Jeddah"),
-]
-
-columns = ["title", "skills", "location"]
-
-df = spark.createDataFrame(data, columns)
+df = spark.read.csv(
+    "data/jobs/sample_jobs.csv",
+    header=True,
+    inferSchema=True
+)
 
 # Split skills into rows
 skills_df = df.select(
