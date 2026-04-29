@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from .database import engine
 from . import models
 from .routes import users, jobs, matches
+from .routes import analytics
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -15,6 +16,7 @@ app = FastAPI(
 app.include_router(users.router)
 app.include_router(jobs.router)
 app.include_router(matches.router)
+app.include_router(analytics.router)
 
 
 @app.get("/")
