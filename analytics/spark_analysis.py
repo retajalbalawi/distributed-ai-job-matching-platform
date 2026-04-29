@@ -31,10 +31,18 @@ skill_counts = skills_df.groupBy("skill").count().orderBy("count", ascending=Fal
 print("Top demanded skills:")
 skill_counts.show()
 
+skill_counts.coalesce(1).write.mode("overwrite").option("header", True).csv(
+    "analytics/output/skill_demand"
+)
+
 # Location analysis
 location_counts = df.groupBy("location").count().orderBy("count", ascending=False)
 
 print("Top locations:")
 location_counts.show()
+
+location_counts.coalesce(1).write.mode("overwrite").option("header", True).csv(
+    "analytics/output/location_demand"
+)
 
 spark.stop()
