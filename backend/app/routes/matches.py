@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from celery.result import AsyncResult
+from ..celery_app import celery_app
+from ..tasks import generate_matches_task
 
 from .. import models
 from ..database import get_db
@@ -55,3 +58,24 @@ def get_matches(user_id: int, db: Session = Depends(get_db)):
     )
 
     return matches
+
+@router.post("/generate-async/{user_id}")
+def generate_matches_async(user_id: int):
+    task = generate_matches_task.delay(user_id)
+
+    return {
+        "message": "Matching task submitted",
+        "task_id": task.id,
+        "status": "queued",
+    }
+
+
+@router.get("/task-status/{task_id}")
+def get_task_status(task_id: str):
+    task_result = AsyncResult(task_id, app=celery_app)
+
+    return {
+        "task_id": task_id,
+        "status": task_result.status,
+        "result": task_result.result if task_result.ready() else None,
+    }
